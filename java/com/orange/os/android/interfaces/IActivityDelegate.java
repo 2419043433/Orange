@@ -1,4 +1,4 @@
-package com.orange.os.android;
+package com.orange.os.android.interfaces;
 
 public interface IActivityDelegate
 {

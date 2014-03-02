@@ -1,4 +1,5 @@
-package com.orange.os.java_normal.app;
+package com.orange.os.all.app;
+
 
 public class Orange 
 {
