@@ -1,7 +1,5 @@
 package com.orange.model.db;
 
-import com.orange.model.db.Item;
-import com.orange.model.db.ErrorCode;
 
 public interface IAttribute
 {

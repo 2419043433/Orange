@@ -9,7 +9,6 @@ import com.orange.interfaces.ICommandProcessor;
 import com.orange.interfaces.IMessageFilter;
 import com.orange.interfaces.IMessageHandler;
 import com.orange.interfaces.IState;
-import com.orange.os.android.IActivityDelegate;
 /**
  * 
  * @author wangli
@@ -18,7 +17,7 @@ import com.orange.os.android.IActivityDelegate;
  * and controll the process sequence.
  *
  */
-public class Controller implements ICommandProcessor, IMessageHandler, IActivityDelegate
+public class Controller implements ICommandProcessor, IMessageHandler
 {
 	private ArrayList<IMessageFilter> mMessageFilters = new ArrayList<IMessageFilter>();
 	private IState mCurrentState = null;
@@ -27,6 +26,7 @@ public class Controller implements ICommandProcessor, IMessageHandler, IActivity
 	{
 		
 	}
+	
 //From IMessageHandler	
 	/**
 	 * 
@@ -50,47 +50,5 @@ public class Controller implements ICommandProcessor, IMessageHandler, IActivity
 		//1. process command myself 
 		//2. process command by sub procesoors
 		return false;
-	}
-	//From IActivityDelegate
-	@Override
-	public void onCreate() 
-	{
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onDestroy() 
-	{
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onStart() 
-	{
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onStop() 
-	{
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onPause() 
-	{
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onResume() 
-	{
-		// TODO Auto-generated method stub
-		
 	}
 }
