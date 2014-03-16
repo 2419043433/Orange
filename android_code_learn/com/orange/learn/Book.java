@@ -4,9 +4,14 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.Region;
+import android.text.Layout.Alignment;
+import android.text.StaticLayout;
+import android.text.TextPaint;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -15,6 +20,8 @@ class Book extends View
 	//memory buffer
 	private Bitmap mBackground = null;
 	private Canvas mMemCanvas = null;
+	private Canvas mCurBackCanvas = null;
+	private Matrix mMatrix = new Matrix();
 	//pages to draw
 	private Bitmap mCurPage = null;
 	private Bitmap mCurPageBack = null;
@@ -37,28 +44,94 @@ class Book extends View
 	
 	private PointF mPointBCMid = new PointF();
 	private PointF mPointJKMid = new PointF();
+	
+	private PointF mPointRotateCenter = new PointF();
+	private float mRotateDegree = 0.0f;
 	//right angle ratio, also ce = ef*(1-ratio), ap = ag * ratio
 	private float mRightAngleRatio = 0.5f;
+	
+	
+	
+	//
+	private String mStrCur = new String();
+	private String mStrCurBack = new String();
+	private String mStrNext = new String();
+	
+	private TextPaint mPaint = new TextPaint();
+	private TextPaint mPointPaint = new TextPaint();
+	private TextPaint mPointPaintX = new TextPaint();
 
 	public Book(Context context) 
 	{
 		super(context);
-
-		mCurPage = Bitmap.createBitmap(480, 800, Bitmap.Config.ARGB_8888);
+		
+		for(int i = 0; i < 800; i ++)
+		{
+			mStrCur += "A";
+			mStrCurBack += "B";
+			mStrNext += "C";
+		}
+		mPaint.setColor(Color.WHITE);
+		mPaint.setTextSize(28);
+		
+		mPointPaint.setColor(Color.BLACK);
+		mPointPaint.setTextSize(35);
+		mPointPaint.setFakeBoldText(true);
+		
+		mPointPaintX.setColor(Color.RED);
+		mPointPaintX.setTextSize(28);
+		
+		mCurPage = Bitmap.createBitmap(600, 1000, Bitmap.Config.ARGB_8888);
 		mMemCanvas = new Canvas(mCurPage);
 		mMemCanvas.drawColor(Color.GREEN);
+		StaticLayout layout = new StaticLayout(mStrCur,mPaint,480,Alignment.ALIGN_NORMAL,1.0F,0.0F,true);
+		layout.draw(mMemCanvas);
+
 		mCurPageBack = Bitmap.createBitmap(480, 800, Bitmap.Config.ARGB_8888);
 		mMemCanvas = new Canvas(mCurPageBack);
-		mMemCanvas.drawColor(Color.YELLOW);
-		mNextPage = Bitmap.createBitmap(480, 800, Bitmap.Config.ARGB_8888);
+		mMemCanvas.drawColor(Color.RED);
+		layout = new StaticLayout(mStrCurBack,mPaint,480,Alignment.ALIGN_NORMAL,1.0F,0.0F,true);
+		layout.draw(mMemCanvas);
+		mCurBackCanvas = new Canvas(mCurPageBack);
+		
+		mNextPage = Bitmap.createBitmap(600, 1000, Bitmap.Config.ARGB_8888);
 		mMemCanvas = new Canvas(mNextPage);
 		mMemCanvas.drawColor(Color.BLUE);	
+		layout = new StaticLayout(mStrNext,mPaint,480,Alignment.ALIGN_NORMAL,1.0F,0.0F,true);
+		layout.draw(mMemCanvas);
 		
-		mBackground = Bitmap.createBitmap(480, 800, Bitmap.Config.ARGB_8888);
+		mBackground = Bitmap.createBitmap(600,1000, Bitmap.Config.ARGB_8888);
 		mMemCanvas = new Canvas(mBackground);
 		
+		mPointA.x = 480;
+		mPointA.y = 800;
 		mPointF.x = 480;
 		mPointF.y = 800;
+		setWillNotDraw(false);
+	}
+	
+	private void JudgePointF()
+	{
+		if(mPointA.x < 480 / 2 && mPointA.y < 800 / 2)
+		{
+			mPointF.x = 0;
+			mPointF.y = 0;
+		}
+		else if(mPointA.x >= 480 / 2 && mPointA.y < 800 / 2)
+		{
+			mPointF.x = 480;
+			mPointF.y = 0;
+		}
+		else if(mPointA.x < 480 / 2 && mPointA.y >= 800 / 2)
+		{
+			mPointF.x = 0;
+			mPointF.y = 800;
+		}
+		else if(mPointA.x >= 480 / 2 && mPointA.y >= 800 / 2)
+		{
+			mPointF.x = 480;
+			mPointF.y = 800;
+		}
 	}
 	
 	private PointF getMidPoint(PointF start, PointF end)
@@ -125,6 +198,14 @@ class Book extends View
 		
 		mPointI.x = (mPointJKMid.x + mPointH.x) / 2;
 		mPointI.y = (mPointJKMid.y + mPointH.y) / 2;
+		
+		//mPointRotateCenter
+		//mRotateDegree
+		double aef = Math.atan2(800.0f - mPointA.y, mPointA.x - mPointE.x);
+		mRotateDegree = 180 - (float)Math.toDegrees(aef);
+		mPointRotateCenter.x = (float)(480 * Math.cos(Math.PI-aef)) + mPointA.x;
+		mPointRotateCenter.y = (float)(480 * Math.sin(aef)) + mPointA.y;
+		
 	}
 	
 	private Path mPathNotCurrent = new Path();
@@ -140,22 +221,63 @@ class Book extends View
 		mPathNotCurrent.lineTo(mPointF.x, mPointF.y);
 		mPathNotCurrent.close();
 
-//		mPathCurBack.reset();
-//		mPathCurBack.moveTo(mPointJ.x, mPointJ.y);
-//		mPathCurBack.quadTo(mPointH.x, mPointH.y, mPointK.x, mPointK.y);
-//		mPathCurBack.lineTo(mPointA.x, mPointA.y);
-//		mPathCurBack.lineTo(mPointB.x, mPointB.y);
-//		mPathCurBack.quadTo(mPointE.x, mPointE.y, mPointC.x, mPointC.y);
-//		mPathCurBack.lineTo(mPointD.x, mPointD.y);
-//		mPathCurBack.lineTo(mPointI.x, mPointI.y);
-//		mPathCurBack.close();
+//		mPathNext.reset();
+//		mPathNext.moveTo(mPointJ.x, mPointJ.y);
+//		mPathNext.lineTo(mPointI.x, mPointI.y);
+//		mPathNext.lineTo(mPointD.x, mPointD.y);
+//		mPathNext.lineTo(mPointC.x, mPointC.y);
+//		mPathNext.lineTo(mPointF.x, mPointF.y);
+//		mPathNext.close();
+		
 		mPathNext.reset();
 		mPathNext.moveTo(mPointJ.x, mPointJ.y);
-		mPathNext.lineTo(mPointI.x, mPointI.y);
+		mPathNext.quadTo(mPointI.x, mPointI.y, mPointI.x, mPointI.y);
 		mPathNext.lineTo(mPointD.x, mPointD.y);
-		mPathNext.lineTo(mPointC.x, mPointC.y);
+		mPathNext.quadTo(mPointC.x, mPointC.y, mPointC.x, mPointC.y);
 		mPathNext.lineTo(mPointF.x, mPointF.y);
 		mPathNext.close();
+	}
+	
+	private void drawPoint(Canvas canvas, String text, PointF point)
+	{
+		canvas.drawCircle(point.x, point.y, 5, mPointPaint);
+		canvas.drawText(" " + text,point.x, point.y, mPointPaint);
+	}
+	
+	private void drawPointx(Canvas canvas, String text, PointF point)
+	{
+		canvas.drawCircle(point.x, point.y, 5, mPointPaintX);
+		canvas.drawText(text,point.x, point.y, mPointPaintX);
+	}
+	
+	private void drawPoints(Canvas canvas)
+	{
+		drawPoint(canvas, "A", mPointA);
+		drawPoint(canvas, "B", mPointB);
+		drawPoint(canvas, "C", mPointC);
+		drawPoint(canvas, "D", mPointD);
+		drawPoint(canvas, "E", mPointE);
+		drawPoint(canvas, "F", mPointF);
+		drawPoint(canvas, "G", mPointG);
+		drawPoint(canvas, "H", mPointH);
+		drawPoint(canvas, "I", mPointI);
+		drawPoint(canvas, "J", mPointJ);
+		drawPoint(canvas, "K", mPointK);
+		drawPoint(canvas, "M", mPointM);
+		drawPoint(canvas, "N", mPointN);
+			
+		//drawPoint(canvas, "BCMid", mPointBCMid);
+		//drawPoint(canvas, "JKMid", mPointJKMid);
+	//	drawPoint(canvas, "X", mPointRotateCenter);
+
+
+	}
+	private int WIDTH = 1;
+	private int HEIGHT = 1;
+	
+	void setPoint(float[] dest, int x, int y, float value)
+	{
+		dest[x * WIDTH + y] = value;
 	}
 	
 	private void drawArea(Canvas canvas)
@@ -166,18 +288,34 @@ class Book extends View
 		canvas.save();
 		canvas.clipPath(mPathNotCurrent, Region.Op.XOR);
 		canvas.drawBitmap(mCurPage, 0, 0, null);
+
+//		float[] verts = new float[2 * 2 * 2];
+//		setPoint(verts, 0, 0, 0);
+//		setPoint(verts, 0, 1, 0);
+//		setPoint(verts, 1, 0, 1);
+//		setPoint(verts, 0, 1, 1);
+//		
+//		
+//		canvas.drawBitmapMesh(mCurPage, 1, 1, verts, 0, null, 0, null);
 		canvas.restore();
+		//draw next page
 		canvas.save();
 		canvas.clipPath(mPathNotCurrent);
 		canvas.clipPath(mPathNext, Region.Op.INTERSECT);
 		canvas.drawBitmap(mNextPage, 0, 0, null);
 		canvas.restore();
 		
+		//draw cur page back
 		canvas.save();
 		canvas.clipPath(mPathNotCurrent);
 		canvas.clipPath(mPathNext, Region.Op.DIFFERENCE);
-		canvas.drawBitmap(mCurPageBack, 0, 0, null);
+		mMatrix.reset();
+		mMatrix.postTranslate(mPointRotateCenter.x - mPointF.x, mPointRotateCenter.y - mPointF.y);
+		mMatrix.postRotate(mRotateDegree, mPointRotateCenter.x, mPointRotateCenter.y);
+		canvas.drawBitmap(mCurPageBack, mMatrix, null);
 		canvas.restore();
+		
+		drawPoints(canvas);
 	}
 	
 	@Override
@@ -185,6 +323,8 @@ class Book extends View
 		mMemCanvas.drawColor(Color.BLACK);
 		drawArea(mMemCanvas);
 		canvas.drawBitmap(mBackground, 0, 0, null);
+		drawPointx(canvas, "X", mPointRotateCenter);
+		//canvas.drawText("hjfgfhgffhfhgfhjgfhjgfhgf\r\n\r\nhgfhgjhgjfhgfhgfhgfhgfhgfhgfhgfhg", 0, 100, mPaint);
 //		canvas.drawColor(Color.BLACK);
 //		mMemCanvas.drawColor(Color.RED);
 //		mPath.reset();
@@ -209,6 +349,7 @@ class Book extends View
 			mPointA.x = event.getX();
 			mPointA.y = event.getY();
 			this.postInvalidate();
+			JudgePointF();
 		}
 		if (event.getAction() == MotionEvent.ACTION_UP) {
 			this.postInvalidate();
