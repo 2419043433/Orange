@@ -1,4 +1,4 @@
-package com.example.bt;
+package com.orange.ui.widget;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -11,17 +11,14 @@ import android.graphics.Region;
 import android.text.Layout.Alignment;
 import android.text.StaticLayout;
 import android.text.TextPaint;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
-class Book extends View
+public class Book extends View
 {
 	//memory buffer
 	private Bitmap mBackground = null;
 	private Canvas mMemCanvas = null;
-	private Canvas mCurBackCanvas = null;
-	private Matrix mMatrix = new Matrix();
 	//pages to draw
 	private Bitmap mCurPage = null;
 	private Bitmap mCurPageBack = null;
@@ -38,107 +35,104 @@ class Book extends View
 	private PointF mPointI = new PointF();
 	private PointF mPointJ = new PointF();
 	private PointF mPointK = new PointF();
-	
 	private PointF mPointM = new PointF();
 	private PointF mPointN = new PointF();
-	
 	private PointF mPointBCMid = new PointF();
 	private PointF mPointJKMid = new PointF();
 	
 	private PointF mPointRotateCenter = new PointF();
 	private float mRotateDegree = 0.0f;
-	//right angle ratio, also ce = ef*(1-ratio), ap = ag * ratio
+	//rotate and translate matrix
+	private Matrix mMatrix = new Matrix();
+	
+	//right angle ratio, ce = ef*(1-ratio), ap = ag * ratio
 	private float mRightAngleRatio = 0.5f;
 	
-	
-	
-	//
 	private String mStrCur = new String();
 	private String mStrCurBack = new String();
 	private String mStrNext = new String();
 	
-	private TextPaint mPaint = new TextPaint();
+	private TextPaint mTextPaint = new TextPaint();
 	private TextPaint mPointPaint = new TextPaint();
-	private TextPaint mPointPaintX = new TextPaint();
+	
+	//width and height of book
+	private static final int kWidth = 600;
+	private static final int kHeight = 700;
+	//width and height of canvas(including book and all the points show area)
+	private static final int kCanvasWidth = 800;
+	private static final int kCanvasHeight = 1024;
 
 	public Book(Context context) 
 	{
 		super(context);
 		
+		//initialize background and default points position
+		mBackground = Bitmap.createBitmap(kCanvasWidth,kCanvasHeight, Bitmap.Config.ARGB_8888);
+		mMemCanvas = new Canvas(mBackground);
+		
+		mPointA.x = kWidth;
+		mPointA.y = kHeight;
+		mPointF.x = kWidth;
+		mPointF.y = kHeight;
+		
+		//make page text
 		for(int i = 0; i < 800; i ++)
 		{
 			mStrCur += "A";
 			mStrCurBack += "B";
 			mStrNext += "C";
 		}
-		mPaint.setColor(Color.WHITE);
-		mPaint.setTextSize(28);
+		//initialize text paint and point paint
+		mTextPaint.setColor(Color.WHITE);
+		mTextPaint.setTextSize(28);
 		
 		mPointPaint.setColor(Color.BLACK);
 		mPointPaint.setTextSize(35);
 		mPointPaint.setFakeBoldText(true);
 		
-		mPointPaintX.setColor(Color.RED);
-		mPointPaintX.setTextSize(28);
-		
-		mCurPage = Bitmap.createBitmap(600, 1000, Bitmap.Config.ARGB_8888);
-		mMemCanvas = new Canvas(mCurPage);
-		mMemCanvas.drawColor(Color.GREEN);
-		StaticLayout layout = new StaticLayout(mStrCur,mPaint,480,Alignment.ALIGN_NORMAL,1.0F,0.0F,true);
-		layout.draw(mMemCanvas);
+		mCurPage = Bitmap.createBitmap(kWidth, kHeight, Bitmap.Config.ARGB_8888);
+		Canvas tmpCanvas = new Canvas(mCurPage);
+		tmpCanvas.drawColor(Color.GREEN);
+		StaticLayout layout = new StaticLayout(mStrCur,mTextPaint,kWidth,Alignment.ALIGN_NORMAL,1.0F,0.0F,true);
+		layout.draw(tmpCanvas);
 
-		mCurPageBack = Bitmap.createBitmap(480, 800, Bitmap.Config.ARGB_8888);
-		mMemCanvas = new Canvas(mCurPageBack);
-		mMemCanvas.drawColor(Color.RED);
-		layout = new StaticLayout(mStrCurBack,mPaint,480,Alignment.ALIGN_NORMAL,1.0F,0.0F,true);
-		layout.draw(mMemCanvas);
-		mCurBackCanvas = new Canvas(mCurPageBack);
+		mCurPageBack = Bitmap.createBitmap(kWidth, kHeight, Bitmap.Config.ARGB_8888);
+		tmpCanvas = new Canvas(mCurPageBack);
+		tmpCanvas.drawColor(Color.RED);
+		layout = new StaticLayout(mStrCurBack,mTextPaint,kWidth,Alignment.ALIGN_NORMAL,1.0F,0.0F,true);
+		layout.draw(tmpCanvas);
 		
-		mNextPage = Bitmap.createBitmap(600, 1000, Bitmap.Config.ARGB_8888);
-		mMemCanvas = new Canvas(mNextPage);
-		mMemCanvas.drawColor(Color.BLUE);	
-		layout = new StaticLayout(mStrNext,mPaint,480,Alignment.ALIGN_NORMAL,1.0F,0.0F,true);
-		layout.draw(mMemCanvas);
-		
-		mBackground = Bitmap.createBitmap(600,1000, Bitmap.Config.ARGB_8888);
-		mMemCanvas = new Canvas(mBackground);
-		
-		mPointA.x = 480;
-		mPointA.y = 800;
-		mPointF.x = 480;
-		mPointF.y = 800;
-		setWillNotDraw(false);
+		mNextPage = Bitmap.createBitmap(kWidth, kHeight, Bitmap.Config.ARGB_8888);
+		tmpCanvas = new Canvas(mNextPage);
+		tmpCanvas.drawColor(Color.BLUE);	
+		layout = new StaticLayout(mStrNext,mTextPaint,kWidth,Alignment.ALIGN_NORMAL,1.0F,0.0F,true);
+		layout.draw(tmpCanvas);
 	}
 	
 	private void JudgePointF()
 	{
-		if(mPointA.x < 480 / 2 && mPointA.y < 800 / 2)
+		if(mPointA.x < kWidth / 2 && mPointA.y < kHeight / 2)
 		{
 			mPointF.x = 0;
 			mPointF.y = 0;
 		}
-		else if(mPointA.x >= 480 / 2 && mPointA.y < 800 / 2)
+		else if(mPointA.x >= kWidth / 2 && mPointA.y < kHeight / 2)
 		{
-			mPointF.x = 480;
+			mPointF.x = kWidth;
 			mPointF.y = 0;
 		}
-		else if(mPointA.x < 480 / 2 && mPointA.y >= 800 / 2)
+		else if(mPointA.x < kWidth / 2 && mPointA.y >= kHeight / 2)
 		{
 			mPointF.x = 0;
-			mPointF.y = 800;
+			mPointF.y = kHeight;
 		}
-		else if(mPointA.x >= 480 / 2 && mPointA.y >= 800 / 2)
+		else if(mPointA.x >= kWidth / 2 && mPointA.y >= kHeight / 2)
 		{
-			mPointF.x = 480;
-			mPointF.y = 800;
+			mPointF.x = kWidth;
+			mPointF.y = kHeight;
 		}
 	}
-	
-	private PointF getMidPoint(PointF start, PointF end)
-	{
-		return new PointF((start.x + end.x)/2, (start.y + end.y)/2);
-	}
-	
+
 	private void calculateAllPoints()
 	{
 		//A : the touch point
@@ -201,17 +195,17 @@ class Book extends View
 		
 		//mPointRotateCenter
 		//mRotateDegree
-		double aef = Math.atan2(800.0f - mPointA.y, mPointA.x - mPointE.x);
+		double aef = Math.atan2(kHeight - mPointA.y, mPointA.x - mPointE.x);
 		mRotateDegree = 180 - (float)Math.toDegrees(aef);
-		mPointRotateCenter.x = (float)(480 * Math.cos(Math.PI-aef)) + mPointA.x;
-		mPointRotateCenter.y = (float)(480 * Math.sin(aef)) + mPointA.y;
-		
+		mPointRotateCenter.x = (float)(kWidth * Math.cos(Math.PI-aef)) + mPointA.x;
+		mPointRotateCenter.y = (float)(kWidth * Math.sin(aef)) + mPointA.y;
 	}
 	
 	private Path mPathNotCurrent = new Path();
 	private Path mPathNext = new Path();
 	private void makePath()
 	{
+		//make path of not current page
 		mPathNotCurrent.reset();
 		mPathNotCurrent.moveTo(mPointJ.x, mPointJ.y);
 		mPathNotCurrent.quadTo(mPointH.x, mPointH.y, mPointK.x, mPointK.y);
@@ -221,14 +215,7 @@ class Book extends View
 		mPathNotCurrent.lineTo(mPointF.x, mPointF.y);
 		mPathNotCurrent.close();
 
-//		mPathNext.reset();
-//		mPathNext.moveTo(mPointJ.x, mPointJ.y);
-//		mPathNext.lineTo(mPointI.x, mPointI.y);
-//		mPathNext.lineTo(mPointD.x, mPointD.y);
-//		mPathNext.lineTo(mPointC.x, mPointC.y);
-//		mPathNext.lineTo(mPointF.x, mPointF.y);
-//		mPathNext.close();
-		
+		//make path of next page(2)
 		mPathNext.reset();
 		mPathNext.moveTo(mPointJ.x, mPointJ.y);
 		mPathNext.quadTo(mPointI.x, mPointI.y, mPointI.x, mPointI.y);
@@ -243,13 +230,7 @@ class Book extends View
 		canvas.drawCircle(point.x, point.y, 5, mPointPaint);
 		canvas.drawText(" " + text,point.x, point.y, mPointPaint);
 	}
-	
-	private void drawPointx(Canvas canvas, String text, PointF point)
-	{
-		canvas.drawCircle(point.x, point.y, 5, mPointPaintX);
-		canvas.drawText(text,point.x, point.y, mPointPaintX);
-	}
-	
+
 	private void drawPoints(Canvas canvas)
 	{
 		drawPoint(canvas, "A", mPointA);
@@ -266,37 +247,20 @@ class Book extends View
 		drawPoint(canvas, "M", mPointM);
 		drawPoint(canvas, "N", mPointN);
 			
-		//drawPoint(canvas, "BCMid", mPointBCMid);
-		//drawPoint(canvas, "JKMid", mPointJKMid);
-	//	drawPoint(canvas, "X", mPointRotateCenter);
-
-
+		drawPoint(canvas, "BCMid", mPointBCMid);
+		drawPoint(canvas, "JKMid", mPointJKMid);
+		drawPoint(canvas, "X", mPointRotateCenter);
 	}
-	private int WIDTH = 1;
-	private int HEIGHT = 1;
-	
-	void setPoint(float[] dest, int x, int y, float value)
-	{
-		dest[x * WIDTH + y] = value;
-	}
-	
-	private void drawArea(Canvas canvas)
+
+	private void drawPage(Canvas canvas)
 	{
 		calculateAllPoints();
 		makePath();
+		
 		//draw current page
 		canvas.save();
 		canvas.clipPath(mPathNotCurrent, Region.Op.XOR);
 		canvas.drawBitmap(mCurPage, 0, 0, null);
-
-//		float[] verts = new float[2 * 2 * 2];
-//		setPoint(verts, 0, 0, 0);
-//		setPoint(verts, 0, 1, 0);
-//		setPoint(verts, 1, 0, 1);
-//		setPoint(verts, 0, 1, 1);
-//		
-//		
-//		canvas.drawBitmapMesh(mCurPage, 1, 1, verts, 0, null, 0, null);
 		canvas.restore();
 		//draw next page
 		canvas.save();
@@ -304,7 +268,6 @@ class Book extends View
 		canvas.clipPath(mPathNext, Region.Op.INTERSECT);
 		canvas.drawBitmap(mNextPage, 0, 0, null);
 		canvas.restore();
-		
 		//draw cur page back
 		canvas.save();
 		canvas.clipPath(mPathNotCurrent);
@@ -320,39 +283,28 @@ class Book extends View
 	
 	@Override
 	protected void onDraw(Canvas canvas) {
-		mMemCanvas.drawColor(Color.BLACK);
-		drawArea(mMemCanvas);
+		mMemCanvas.drawColor(Color.YELLOW);
+		drawPage(mMemCanvas);
 		canvas.drawBitmap(mBackground, 0, 0, null);
-		drawPointx(canvas, "X", mPointRotateCenter);
-		//canvas.drawText("hjfgfhgffhfhgfhjgfhjgfhgf\r\n\r\nhgfhgjhgjfhgfhgfhgfhgfhgfhgfhgfhg", 0, 100, mPaint);
-//		canvas.drawColor(Color.BLACK);
-//		mMemCanvas.drawColor(Color.RED);
-//		mPath.reset();
-//		mPath.moveTo(0, 0);
-//		mPath.lineTo(100, 100);
-//		mPath.quadTo(100, 200, 20, 180);
-//		mPath.close();
-//		canvas.clipPath(mPath,Region.Op.XOR);
-//		canvas.drawBitmap(mBackground, 0, 0, null);
-		
 	}
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-		// TODO Auto-generated method stub
 		if (event.getAction() == MotionEvent.ACTION_MOVE) {
+			//invalidate the canvas on move
 			mPointA.x = event.getX();
 			mPointA.y = event.getY();
-			this.postInvalidate();
+			postInvalidate();
 		}
 		if (event.getAction() == MotionEvent.ACTION_DOWN) {
+			//record the down point
 			mPointA.x = event.getX();
 			mPointA.y = event.getY();
-			this.postInvalidate();
+			postInvalidate();
 			JudgePointF();
 		}
 		if (event.getAction() == MotionEvent.ACTION_UP) {
-			this.postInvalidate();
+			postInvalidate();
 		}
 		return true;
 	}
