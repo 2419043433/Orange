@@ -18,11 +18,13 @@ public class CompositeListAdapter extends BaseAdapter implements
 	}
 
 	public void add(BaseAdapter adapter) {
+		adapter.registerDataSetObserver(mDataObserver);
 		mSubAdapters.add(adapter);
 	}
 
 	public void remove(BaseAdapter adapter) {
 		mSubAdapters.remove(adapter);
+		adapter.unregisterDataSetObserver(mDataObserver);
 	}
 
 	public int getSubAdapterCount() {

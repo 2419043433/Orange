@@ -14,9 +14,9 @@ public class VerticalBookListAdapter extends BaseAdapter {
 	private ArrayList<String> mData = new ArrayList<String>();
 	private Context mContext = null;
 
-	public VerticalBookListAdapter(Context context) {
+	public VerticalBookListAdapter(Context context, int k) {
 		mContext = context;
-		for(int i = 0; i < 20; ++ i)
+		for(int i = k; i < k + 20; ++ i)
 		{
 			mData.add("test" + i);
 		}
@@ -44,6 +44,7 @@ public class VerticalBookListAdapter extends BaseAdapter {
 			itemView = new BookItemView(mContext);
 			itemView.setMode(BookItemView.kVertical);
 		}
+		itemView.setHeight(50);
 		itemView.setText((String) getItem(position));
 		return itemView;
 	}

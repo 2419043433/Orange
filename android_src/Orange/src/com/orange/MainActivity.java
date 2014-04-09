@@ -4,16 +4,16 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 
-import com.orange.learn.L_Drawable;
+import com.orange.ui.widget.Portal;
 
 public class MainActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-       // Portal main = new Portal(this);
+        Portal main = new Portal(this);
        // Book main = new Book(this);
-        L_Drawable main = new L_Drawable(this);
+       // L_Drawable main = new L_Drawable(this);
         setContentView(main);
         //setContentView(R.layout.activity_main);
     }
