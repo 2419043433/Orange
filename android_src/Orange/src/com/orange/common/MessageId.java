@@ -1,6 +1,6 @@
 package com.orange.common;
 
-public class MessageId
+public enum MessageId
 {
 	
 }

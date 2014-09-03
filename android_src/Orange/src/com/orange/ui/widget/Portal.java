@@ -6,6 +6,7 @@ import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
 
+
 public class Portal extends RelativeLayout {
 	private BookSet mBookSet = null;
 
