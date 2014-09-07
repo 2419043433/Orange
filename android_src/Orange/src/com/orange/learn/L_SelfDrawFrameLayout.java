@@ -1,6 +1,7 @@
 package com.orange.learn;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -9,15 +10,19 @@ import android.graphics.Paint.Style;
 import android.graphics.Path.FillType;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.util.Log;
 import android.widget.FrameLayout;
 
 public class L_SelfDrawFrameLayout extends FrameLayout
 {
     int mRadius = 20;
-
+    Bitmap mCurPage = null;
+    Canvas mCanvas = null;
     public L_SelfDrawFrameLayout(Context context)
     {
         super(context);
+        mCurPage = Bitmap.createBitmap(1000, 800, Bitmap.Config.ARGB_8888);
+        mCanvas = new Canvas(mCurPage);
     }
 
     //TODO: make new objects as member
@@ -39,6 +44,7 @@ public class L_SelfDrawFrameLayout extends FrameLayout
     @Override
     protected void dispatchDraw(Canvas canvas)
     {
+        long time = System.currentTimeMillis();
         Rect rect = new Rect();
         this.getDrawingRect(rect);
         rect.set(rect.left + 100, rect.top + 100, rect.right - 100, rect.bottom - 100);
@@ -63,8 +69,11 @@ public class L_SelfDrawFrameLayout extends FrameLayout
         p.setStyle(Style.FILL);
         canvas.save();
         canvas.clipPath(path);
-        canvas.drawRect(rect, p);
+        super.dispatchDraw(mCanvas);
+        canvas.drawBitmap(mCurPage, 0, 0, null);
+        //canvas.drawRect(rect, p);
         canvas.restore();
+        Log.v("xxx","multiselfdraw:" + (System.currentTimeMillis() - time));
 
 
 
