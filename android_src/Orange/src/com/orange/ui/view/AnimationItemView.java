@@ -1,9 +1,15 @@
 package com.orange.ui.view;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.RectF;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.RoundRectShape;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.ScaleAnimation;
+import android.widget.FrameLayout;
 
 import com.orange.R;
 import com.orange.util.LayoutParamsUtil;
@@ -14,19 +20,19 @@ public class AnimationItemView extends RoundRectFrameLayout
     private static final int ITEM_VERTICAL_SHADOW = 0;
     // This value is up to the nine-patch image 'selected_bg', should be in
     // pixel
-    private static final int SIDELINE_WIDTH_PIXEL = 3;
+    private static final int SIDELINE_WIDTH_PIXEL =2 ;
 
-    private RoundRectFrameLayout mShadowBg = null;
+    private FrameLayout mShadowBg = null;
     private RoundRectFrameLayout mFocusedBg = null;
     // all content in #mContentWrapper
-    private RoundRectFrameLayout mRoundRectContainer = null;
+   // private RoundRectFrameLayout mRoundRectContainer = null;
 
     private ScaleAnimation mZoomAnimation;
     private ScaleAnimation mMagnifyAnimation;
 
     public void setContentView(View v)
     {
-        mRoundRectContainer.addView(v);
+    	mFocusedBg.addView(v);
     }
 
     public AnimationItemView(Context context)
@@ -39,22 +45,22 @@ public class AnimationItemView extends RoundRectFrameLayout
 
     private void initComponents(Context context)
     {
-        mShadowBg = new RoundRectFrameLayout(context);
+        mShadowBg = new FrameLayout(context);
         mShadowBg.setLayoutParams(LayoutParamsUtil.FRAMELAYOUT_MATCH_PARENT);
         mShadowBg.setPadding(ITEM_HORIZONTAL_SHADOW, ITEM_VERTICAL_SHADOW, ITEM_HORIZONTAL_SHADOW, -1);
 
         mFocusedBg = new RoundRectFrameLayout(context);
         mFocusedBg.setLayoutParams(LayoutParamsUtil.FRAMELAYOUT_MATCH_PARENT);
 
-        mRoundRectContainer = new RoundRectFrameLayout(context);
-        mRoundRectContainer.setLayoutParams(LayoutParamsUtil.FRAMELAYOUT_MATCH_PARENT);
+//        mRoundRectContainer = new RoundRectFrameLayout(context);
+//        mRoundRectContainer.setLayoutParams(LayoutParamsUtil.FRAMELAYOUT_MATCH_PARENT);
 
-        mFocusedBg.addView(mRoundRectContainer);
+      //  mFocusedBg.addView(mRoundRectContainer);
         mShadowBg.addView(mFocusedBg);
         addView(mShadowBg);
 
-        mMagnifyAnimation = new ScaleAnimation(1f, 2f, 1f, 2f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-        mZoomAnimation = new ScaleAnimation(2f, 1f, 2f, 1f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        mMagnifyAnimation = new ScaleAnimation(1f, 1.3f, 1f, 1.3f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        mZoomAnimation = new ScaleAnimation(1.3f, 1f, 1.3f, 1f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
 
     }
 
@@ -74,12 +80,18 @@ public class AnimationItemView extends RoundRectFrameLayout
     private void OnFocusedStateChanged(boolean focused)
     {
         startAnimation(focused);
-        mFocusedBg.setBackgroundDrawable(focused ? getResources().getDrawable(R.drawable.selected_bg) : null);
+        //mFocusedBg.setBackgroundDrawable(focused ? getResources().getDrawable(R.drawable.selected_bg) : null);
+        mFocusedBg.setBackgroundColor(Color.BLUE);
         int focusedBgPadding = focused ? SIDELINE_WIDTH_PIXEL : 0;
         mFocusedBg.setPadding(focusedBgPadding, focusedBgPadding, focusedBgPadding, focusedBgPadding);
     }
 
     boolean mClicked = false;
+    
+    public boolean isClickedFlag()
+    {
+    	return mClicked;
+    }
 
     private void setupListeners()
     {
@@ -104,10 +116,14 @@ public class AnimationItemView extends RoundRectFrameLayout
             }
         });
     }
+    
+    
 
     @SuppressWarnings("deprecation")
     private void updateTheme()
     {
+    	this.setBackgroundColor(Color.RED);
+//    	int radius = 5;
 //        float[] outerR = new float[] { 12, 12, 12, 12, 12, 12, 12, 12 }; 
 //        RectF   inset = new RectF(10, 10, 10, 10); 
 //        float[] innerR = new float[] { 12, 12, 12, 12, 12, 12, 12, 12 };
@@ -117,6 +133,6 @@ public class AnimationItemView extends RoundRectFrameLayout
 //        gDrawable.se
 //       // sDrawable.setColorFilter(Color.RED, Mode.DST_IN);
 //        mShadowBg.setBackgroundDrawable(sDrawable);
-        mShadowBg.setBackgroundDrawable(getResources().getDrawable(R.drawable.shadow_bg));
+        //mShadowBg.setBackgroundDrawable(getResources().getDrawable(R.drawable.shadow_bg));
     }
 }

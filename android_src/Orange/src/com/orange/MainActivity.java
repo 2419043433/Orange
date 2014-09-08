@@ -2,15 +2,17 @@ package com.orange;
 
 import android.app.Activity;
 import android.graphics.Color;
+import android.graphics.RectF;
+import android.graphics.drawable.shapes.RoundRectShape;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.View;
 import android.widget.FrameLayout;
-import android.widget.FrameLayout.LayoutParams;
 import android.widget.TextView;
 
 import com.orange.learn.L_GridView;
+import com.orange.learn.L_RoundRectShapeDrawable;
 import com.orange.ui.view.AnimationItemView;
 import com.orange.util.LayoutParamsUtil;
 
@@ -40,8 +42,9 @@ public class MainActivity extends Activity {
         tView.setText(textString);
       //L_SelfDrawFrameLayout main = new L_SelfDrawFrameLayout(this);
         //main.addView(tView);
-        //L_GridView main = new L_GridView(this);
-        View main = makeSingleAniationView();
+        L_GridView main = new L_GridView(this);
+        //View main = makeSingleAniationView();
+        //View main = makeRoundRectView();
         setContentView(main);
         
         //setContentView(R.layout.activity_main);
@@ -49,18 +52,40 @@ public class MainActivity extends Activity {
     
     private FrameLayout make500X500FrameLayout()
     {
-        FrameLayout fm = new FrameLayout(this);
+    	AnimationItemView fm = new AnimationItemView(this);
         FrameLayout.LayoutParams lParams = new FrameLayout.LayoutParams(500, 500,Gravity.CENTER);
         fm.setLayoutParams(lParams);
         return fm;
+    }
+    
+    
+    private FrameLayout make500X500FrameLayout2()
+    {
+    	FrameLayout fm = new FrameLayout(this);
+        FrameLayout.LayoutParams lParams = new FrameLayout.LayoutParams(500, 500,Gravity.CENTER);
+        fm.setLayoutParams(lParams);
+        return fm;
+    }
+    
+    private View makeRoundRectView()
+    {
+    	int radius = 5;
+    	int width = 2;
+      float[] outerR = new float[] { radius, radius, radius, radius, radius, radius, radius, radius }; 
+      RectF   inset = new RectF(width, width, width, width); 
+      float[] innerR = new float[] { radius, radius, radius, radius, radius, radius, radius, radius };
+      RoundRectShape rrsRectShape = new RoundRectShape(outerR, inset, innerR);
+      L_RoundRectShapeDrawable sp = new L_RoundRectShapeDrawable(rrsRectShape);
+        FrameLayout mainFrameLayout = new FrameLayout(this);
+        FrameLayout fm = make500X500FrameLayout2();
+        mainFrameLayout.addView(fm);
+        return mainFrameLayout;
     }
     
     private View makeSingleAniationView()
     {
         FrameLayout mainFrameLayout = new FrameLayout(this);
         FrameLayout fm = make500X500FrameLayout();
-        AnimationItemView view = new AnimationItemView(this);
-        fm.addView(view);
         mainFrameLayout.addView(fm);
         return mainFrameLayout;
     }
