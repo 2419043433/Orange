@@ -1,32 +1,65 @@
 package com.orange.learn;
 
+import android.R.integer;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.Paint.Style;
-import android.graphics.Path.FillType;
+import android.graphics.PaintFlagsDrawFilter;
+import android.graphics.Path;
+import android.graphics.Path.Direction;
+import android.graphics.PixelFormat;
+import android.graphics.Region.Op;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.widget.FrameLayout;
 
 public class L_SelfDrawFrameLayout extends FrameLayout
 {
-    int mRadius = 20;
+    int mRadius = 50;
     Bitmap mCurPage = null;
     Canvas mCanvas = null;
+    private Path mPath = new Path();
+    private Paint mPaint = new Paint();
+    
+    private DisplayMetrics mDisplayMetrics;
+    
+    private int dipToPixel(int dip)
+    {
+        float scale = ((float)mDisplayMetrics.densityDpi) / 160;
+        return (int)scale * dip;
+    }
+
+    @SuppressLint("NewApi")
     public L_SelfDrawFrameLayout(Context context)
     {
         super(context);
-        mCurPage = Bitmap.createBitmap(1000, 800, Bitmap.Config.ARGB_8888);
+        mDisplayMetrics = getResources().getDisplayMetrics();
+        mCurPage = Bitmap.createBitmap(2000, 2000, Bitmap.Config.ARGB_8888);
         mCanvas = new Canvas(mCurPage);
+        setBackgroundColor(Color.BLACK);
+        try
+        {
+            if (android.os.Build.VERSION.SDK_INT >= 11)
+            {
+                setLayerType(LAYER_TYPE_SOFTWARE, null);
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
-    //TODO: make new objects as member
-    private static Path clipRoundRectPath(Rect src, int radius)
+    // TODO: make new objects as member
+    private static Path clipRoundRectPath(RectF src, int radius)
     {
         Path path = new Path();
         path.moveTo(src.left, src.top + radius);
@@ -40,46 +73,65 @@ public class L_SelfDrawFrameLayout extends FrameLayout
         path.close();
         return path;
     }
+    
+    private void drawPoint(Canvas canvas,int x, int y)
+    {
+        Paint paint = new Paint();
+        paint.setColor(Color.YELLOW);
+        canvas.drawCircle((float)x, (float)y, 3, paint);
+    }
+    
+    private void drawPoint(Canvas canvas,float x, float y)
+    {
+        Paint paint = new Paint();
+        paint.setColor(Color.YELLOW);
+        canvas.drawCircle(x, y, 3, paint);
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas)
+    {
+        Log.v("xxx", "onDraw");
+    }
+
+    private PorterDuffXfermode xfermode = new PorterDuffXfermode(PorterDuff.Mode.SRC_IN);
 
     @Override
     protected void dispatchDraw(Canvas canvas)
     {
+
+        // super.dispatchDraw(canvas);
+
+        int kOutterRadius = 50;
+        int kLineWidth = 30;
         long time = System.currentTimeMillis();
         Rect rect = new Rect();
+        RectF rectf = new RectF();
         this.getDrawingRect(rect);
-        rect.set(rect.left + 100, rect.top + 100, rect.right - 100, rect.bottom - 100);
-        Path path = clipRoundRectPath(rect, mRadius);
-        
-        
-        path.reset();
-        path.moveTo(0, 0);
-        path.lineTo(500, 0);
-        path.lineTo(500, 500);
-        path.arcTo(new RectF(300, 400, 500, 600), 0, 180);
-        path.lineTo(0,500);
-
-        
-        Paint p = new Paint();
+        rectf.set(rect.left + 100, rect.top + 100, rect.right - 100, rect.bottom - 100);
+        Path path = mPath;
+        path.addRoundRect(rectf, kOutterRadius, kOutterRadius, Direction.CW);
+        Paint p = mPaint;
         p.setAntiAlias(true);
         p.setStyle(Style.STROKE);
+        //p.setStrokeWidth(kLineWidth);
         p.setColor(Color.GREEN);
         canvas.drawPath(path, p);
-
-        p.setColor(Color.RED);
-        p.setStyle(Style.FILL);
+        
+        path.reset();
+        RectF rectF2 = new RectF();
+        rectF2.set(rectf.left + kLineWidth, rectf.top + kLineWidth, rectf.right - kLineWidth, rectf.bottom - kLineWidth);
+        path.addRoundRect(rectF2, kOutterRadius - kLineWidth, kOutterRadius - kLineWidth, Direction.CW);
+        canvas.drawRect(rectF2, p);
         canvas.save();
         canvas.clipPath(path);
         super.dispatchDraw(mCanvas);
-        canvas.drawBitmap(mCurPage, 0, 0, null);
-        //canvas.drawRect(rect, p);
+        canvas.drawBitmap(mCurPage, 0, 0, p);
         canvas.restore();
-        Log.v("xxx","multiselfdraw:" + (System.currentTimeMillis() - time));
+        drawPoint(canvas, rect.left + 100, rect.top + 100);
+        drawPoint(canvas, rectF2.left, rectF2.top);
 
-
-
-        //canvas.drawPath(path, p);
-        // canvas.drawArc(new RectF(300,300,500,500), 180, 90, true, p);
-        // canvas.drawColor(Color.RED);
+        Log.v("xxx", "multiselfdraw:" + (System.currentTimeMillis() - time));
     }
 
 }
