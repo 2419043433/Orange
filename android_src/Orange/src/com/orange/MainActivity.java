@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.orange.learn.L_GridView;
 import com.orange.learn.L_RoundRectShapeDrawable;
+import com.orange.time_machine.TimeMachineTestUtil;
 import com.orange.ui.view.AnimationItemView;
 import com.orange.util.LayoutParamsUtil;
 
@@ -42,8 +43,8 @@ public class MainActivity extends Activity {
         tView.setText(textString);
       //L_SelfDrawFrameLayout main = new L_SelfDrawFrameLayout(this);
         //main.addView(tView);
-        L_GridView main = new L_GridView(this);
-        //View main = makeSingleAniationView();
+        //L_GridView main = new L_GridView(this);
+        View main = TimeMachineTestUtil.makeTestView(this); //makeSingleAniationView();
         //View main = makeRoundRectView();
         setContentView(main);
         
@@ -62,8 +63,13 @@ public class MainActivity extends Activity {
     private FrameLayout make500X500FrameLayout2()
     {
     	FrameLayout fm = new FrameLayout(this);
-        FrameLayout.LayoutParams lParams = new FrameLayout.LayoutParams(500, 500,Gravity.CENTER);
+        FrameLayout.LayoutParams lParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
         fm.setLayoutParams(lParams);
+        TextView textView = new TextView(this);
+        textView.setText("adjlksdfjk");
+        textView.setBackgroundColor(Color.BLUE);
+        fm.addView(textView);
+        fm.setBackgroundColor(Color.YELLOW);
         return fm;
     }
     
@@ -85,7 +91,10 @@ public class MainActivity extends Activity {
     private View makeSingleAniationView()
     {
         FrameLayout mainFrameLayout = new FrameLayout(this);
-        FrameLayout fm = make500X500FrameLayout();
+      //  FrameLayout.LayoutParams fLayoutParams = new FrameLayout(context)
+        mainFrameLayout.setBackgroundColor(Color.GRAY);
+        FrameLayout fm = make500X500FrameLayout2();
+       // fm.setBackgroundColor(Color.RED);
         mainFrameLayout.addView(fm);
         return mainFrameLayout;
     }

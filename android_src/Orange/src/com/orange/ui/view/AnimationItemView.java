@@ -3,9 +3,11 @@ package com.orange.ui.view;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.RectF;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.RoundRectShape;
+import android.view.Gravity;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.ScaleAnimation;
@@ -20,7 +22,7 @@ public class AnimationItemView extends RoundRectFrameLayout
     private static final int ITEM_VERTICAL_SHADOW = 0;
     // This value is up to the nine-patch image 'selected_bg', should be in
     // pixel
-    private static final int SIDELINE_WIDTH_PIXEL =2 ;
+    private static final int SIDELINE_WIDTH_PIXEL =2;
 
     private FrameLayout mShadowBg = null;
     private RoundRectFrameLayout mFocusedBg = null;
@@ -50,7 +52,9 @@ public class AnimationItemView extends RoundRectFrameLayout
         mShadowBg.setPadding(ITEM_HORIZONTAL_SHADOW, ITEM_VERTICAL_SHADOW, ITEM_HORIZONTAL_SHADOW, -1);
 
         mFocusedBg = new RoundRectFrameLayout(context);
-        mFocusedBg.setLayoutParams(LayoutParamsUtil.FRAMELAYOUT_MATCH_PARENT);
+        FrameLayout.LayoutParams FRAMELAYOUT_MATCH_PARENT = new FrameLayout.LayoutParams(LayoutParamsUtil.MATCH_PARENT, LayoutParamsUtil.MATCH_PARENT);
+        
+        mFocusedBg.setLayoutParams(FRAMELAYOUT_MATCH_PARENT);
 
 //        mRoundRectContainer = new RoundRectFrameLayout(context);
 //        mRoundRectContainer.setLayoutParams(LayoutParamsUtil.FRAMELAYOUT_MATCH_PARENT);
@@ -80,8 +84,8 @@ public class AnimationItemView extends RoundRectFrameLayout
     private void OnFocusedStateChanged(boolean focused)
     {
         startAnimation(focused);
-        //mFocusedBg.setBackgroundDrawable(focused ? getResources().getDrawable(R.drawable.selected_bg) : null);
-        mFocusedBg.setBackgroundColor(Color.BLUE);
+        mFocusedBg.setBackgroundDrawable(focused ? getResources().getDrawable(R.drawable.selected_bg) : null);
+        //mFocusedBg.setBackgroundColor(Color.BLUE);
         int focusedBgPadding = focused ? SIDELINE_WIDTH_PIXEL : 0;
         mFocusedBg.setPadding(focusedBgPadding, focusedBgPadding, focusedBgPadding, focusedBgPadding);
     }
@@ -122,7 +126,8 @@ public class AnimationItemView extends RoundRectFrameLayout
     @SuppressWarnings("deprecation")
     private void updateTheme()
     {
-    	this.setBackgroundColor(Color.RED);
+    	//this.setBackgroundDrawable(new ColorDrawable(Color.BLUE));
+    	//this.setBackgroundColor(Color.RED);
 //    	int radius = 5;
 //        float[] outerR = new float[] { 12, 12, 12, 12, 12, 12, 12, 12 }; 
 //        RectF   inset = new RectF(10, 10, 10, 10); 
