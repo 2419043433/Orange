@@ -1,6 +1,7 @@
 package com.orange.time_machine;
 
 import android.annotation.SuppressLint;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -23,7 +24,7 @@ class TouchEventListener implements View.OnTouchListener
         public void onActionUp(View v, MotionEvent event);
 
         public void onActionMove(View v, MotionEvent event);
-        
+
         public void onActionOutside(View v, MotionEvent event);
     }
 
@@ -35,6 +36,7 @@ class TouchEventListener implements View.OnTouchListener
         {
             return false;
         }
+        Log.v("ZZZ", "" + event.getAction());
         switch (event.getAction())
         {
             case MotionEvent.ACTION_DOWN:
@@ -43,6 +45,7 @@ class TouchEventListener implements View.OnTouchListener
                     mDelegate.onActionDown(v, event);
                 }
                 break;
+            case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP:
                 {
                     mHasActionDown = false;
@@ -58,13 +61,14 @@ class TouchEventListener implements View.OnTouchListener
                 }
                 break;
             case MotionEvent.ACTION_OUTSIDE:
-            {
-                if (mHasActionDown)
                 {
-                    mDelegate.onActionOutside(v, event);
+                    if (mHasActionDown)
+                    {
+                        mHasActionDown = false;
+                        mDelegate.onActionOutside(v, event);
+                    }
                 }
-            }
-            break;
+                break;
 
         }
         return true;

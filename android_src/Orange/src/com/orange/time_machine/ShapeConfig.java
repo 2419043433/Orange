@@ -2,6 +2,7 @@ package com.orange.time_machine;
 
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Paint.Style;
 
 public class ShapeConfig
 {
@@ -24,6 +25,8 @@ public class ShapeConfig
         mPadding = 10;
         mPaint = new Paint();
         mPaint.setColor(Color.RED);
+        mPaint.setStyle(Style.STROKE);
+        mPaint.setStrokeWidth(10);
     }
 
     public void setColor(int color)

@@ -2,6 +2,8 @@ package com.orange.time_machine;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Color;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,8 +18,9 @@ import android.widget.ScrollView;
 @SuppressLint("NewApi")
 public class ScrollToolBox extends FrameLayout
 {
-
+    private static final String TAG = "ScrollToolBox";
     private ScrollView mScrollView;
+    private LinearLayout mDestLayer;
     private LinearLayout mContent;
     private View mCurSelectedView;
     private FrameLayout mDragLayer;
@@ -40,8 +43,8 @@ public class ScrollToolBox extends FrameLayout
 
     private Animation createAlphaAnimation(boolean disappare)
     {
-        float from = disappare ? 1.0f : 0.0f;
-        float to = disappare ? 0.0f : 1.0f;
+        float from = disappare ? 1.0f : 0.1f;
+        float to = disappare ? 0.1f : 1.0f;
         Animation animation = new AlphaAnimation(from, to);
         animation.setDuration(500);
         animation.setFillAfter(true);
@@ -51,9 +54,15 @@ public class ScrollToolBox extends FrameLayout
     @SuppressLint("ClickableViewAccessibility")
     private void initCompoment()
     {
+        mDestLayer = new LinearLayout(getContext());
+        FrameLayout.LayoutParams destLayoutParams = new FrameLayout.LayoutParams(500, FrameLayout.LayoutParams.MATCH_PARENT);
+        destLayoutParams.leftMargin = 400;
+        mDestLayer.setOrientation(LinearLayout.HORIZONTAL);
+        mDestLayer.setLayoutParams(destLayoutParams);
+
         mDragLayer = new FrameLayout(getContext());
         mDragLayer.setLayoutParams(new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
-        
+
         // Views
 
         mScrollView = new ScrollView(getContext());
@@ -64,15 +73,26 @@ public class ScrollToolBox extends FrameLayout
         mContent.setOrientation(LinearLayout.VERTICAL);
 
         mScrollView.addView(mContent);
+        addView(mDestLayer);
         addView(mScrollView);
         addView(mDragLayer);
-        setOnTouchListener(new TouchEventListener(mTouchEventDelegate));
 
         mAdapter = new Adapter();
         updateData();
+
     }
 
-
+    private View.OnLongClickListener mOnLongClickListener = new View.OnLongClickListener()
+    {
+        @Override
+        public boolean onLongClick(View v)
+        {
+            mScrollView.startAnimation(createAlphaAnimation(true));
+            mCurrentMotionDownView = v;
+            mFlag = true;
+            return true;
+        }
+    };
 
     private View.OnClickListener mOnClickListener = new View.OnClickListener()
     {
@@ -82,11 +102,12 @@ public class ScrollToolBox extends FrameLayout
             // zoom the previous selected and magnify current selected
             if (mCurSelectedView != null)
             {
+                mCurSelectedView.startAnimation(createScaleAnimation(true));
                 if (mCurSelectedView == view)
                 {
+                    mCurSelectedView = null;
                     return;
                 }
-                mCurSelectedView.startAnimation(createScaleAnimation(true));
             }
 
             mCurSelectedView = view;
@@ -109,74 +130,98 @@ public class ScrollToolBox extends FrameLayout
             mContent.addView(view);
         }
     }
-    
-    private TouchEventListener.Delegate mTouchEventDelegate = new TouchEventListener.Delegate()
+
+    boolean mFlag = false;
+    private boolean mHasActionDown = false;
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event)
     {
-        @Override
-        public void onActionDown(View v, MotionEvent event)
+        Log.v(TAG, "dispatchTouchEvent:");
+        if (!mFlag)
         {
+            return super.dispatchTouchEvent(event);
+        }
+        switch (event.getAction())
+        {
+            case MotionEvent.ACTION_DOWN:
+                {
+                    mHasActionDown = true;
+                }
+                break;
+            case MotionEvent.ACTION_OUTSIDE:
+            case MotionEvent.ACTION_CANCEL:
+            case MotionEvent.ACTION_UP:
+                {
+                    mHasActionDown = false;
+                    onActionUp(event);
+                }
+                break;
+            case MotionEvent.ACTION_MOVE:
+                {
+                    if (mHasActionDown || mFlag)
+                    {
+                        onActionMove(event);
+                    }
+                }
+                break;
 
+            default:
+                break;
+        }
+        return true;
+    }
+
+    private void createDragView()
+    {
+        mDragTargetView = new Rectangle(getContext());
+        mDragTargetView.setVisibility(View.INVISIBLE);
+        mDragTargetView.setBackgroundColor(Color.GREEN);
+        LinearLayout.LayoutParams lParams = new LinearLayout.LayoutParams(100, 100);
+        lParams.leftMargin = 20;
+        lParams.rightMargin = 20;
+        mDragTargetView.setLayoutParams(lParams);
+        mDragLayer.removeAllViews();
+        mDragLayer.addView(mDragTargetView);
+    }
+
+    public void onActionUp(MotionEvent event)
+    {
+        if (!mFlag || null == mDragTargetView)
+        {
+            return;
+        }
+        mDragLayer.removeAllViews();
+        mDestLayer.addView(mDragTargetView);
+        mDragTargetView = null;
+        mFlag = false;
+        mScrollView.startAnimation(createAlphaAnimation(false));
+    }
+
+    public void onActionMove(MotionEvent event)
+    {
+        if (!mFlag || null == mCurrentMotionDownView)
+        {
+            return;
+        }
+        if (null == mDragTargetView)
+        {
+            createDragView();
         }
 
-        @Override
-        public void onActionUp(View v, MotionEvent event)
-        {
+        int x = (int) event.getX();
+        int y = (int) event.getY();
 
+        if (mDragTargetView.getVisibility() != View.VISIBLE)
+        {
+            mDragTargetView.setVisibility(View.VISIBLE);
         }
+        mDragTargetView.layout(x - mCurrentMotionDownView.getWidth() / 2, y - mCurrentMotionDownView.getHeight() / 2, x + mCurrentMotionDownView.getWidth() / 2, y
+                + mCurrentMotionDownView.getHeight() / 2);
+    }
 
-        @Override
-        public void onActionMove(View v, MotionEvent event)
-        {
-            if(null == mCurrentMotionDownView)
-            {
-                return;
-            }
-            
-            int x = (int) event.getX();
-            int y = (int) event.getY();
-            Rectangle dragView = new Rectangle(getContext());
-            dragView.setLayoutParams(v.getLayoutParams());
-            dragView.setX(x);
-            dragView.setY(y);
-            mDragLayer.addView(dragView);
-            ScrollToolBox.this.postInvalidate();
-        }
-
-        @Override
-        public void onActionOutside(View v, MotionEvent event)
-        {
-            
-        }      
-    };
-    
     private View mCurrentMotionDownView;
-    
-    private TouchEventListener.Delegate mItemTouchEventDelegate = new TouchEventListener.Delegate()
-    {
-        @Override
-        public void onActionDown(View v, MotionEvent event)
-        {
-            mCurrentMotionDownView = v;
-        }
-
-        @Override
-        public void onActionUp(View v, MotionEvent event)
-        {
-            mCurrentMotionDownView = null;
-        }
-
-        @Override
-        public void onActionMove(View v, MotionEvent event)
-        {
-
-        }
-
-        @Override
-        public void onActionOutside(View v, MotionEvent event)
-        {
-            mCurrentMotionDownView = null;
-        }      
-    };
+    private View mDragTargetView;
 
     private Adapter mAdapter;
 
@@ -218,7 +263,7 @@ public class ScrollToolBox extends FrameLayout
                 lParams.rightMargin = 20;
                 view.setLayoutParams(lParams);
                 view.setOnClickListener(mOnClickListener);
-                view.setOnTouchListener(new TouchEventListener(mItemTouchEventDelegate));
+                view.setOnLongClickListener(mOnLongClickListener);
             }
 
             return view;

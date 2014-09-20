@@ -25,5 +25,4 @@ public class Rectangle extends FrameLayout
         mRect.bottom -= ShapeConfig.getInstance().getPadding();
         canvas.drawRect(mRect, ShapeConfig.getInstance().getPaint());
     }
-
 }
