@@ -7,7 +7,7 @@ public class TimeMachineTestUtil
 {
     public static View makeTestView(Context context)
     {
-        ToolBox tbBox = new ToolBox(context);
+        ScrollToolBox tbBox = new ScrollToolBox(context);
         return tbBox;
     }
 }
