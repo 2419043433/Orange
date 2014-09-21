@@ -11,9 +11,8 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
-import com.orange.learn.L_GridView;
 import com.orange.learn.L_RoundRectShapeDrawable;
-import com.orange.time_machine.TimeMachineTestUtil;
+import com.orange.opengl.CubeWithTextureRenderer;
 import com.orange.ui.view.AnimationItemView;
 import com.orange.util.LayoutParamsUtil;
 
@@ -44,8 +43,9 @@ public class MainActivity extends Activity {
       //L_SelfDrawFrameLayout main = new L_SelfDrawFrameLayout(this);
         //main.addView(tView);
         //L_GridView main = new L_GridView(this);
-        View main = TimeMachineTestUtil.makeTestView(this); //makeSingleAniationView();
+        //View main = TimeMachineTestUtil.makeTestView(this); //makeSingleAniationView();
         //View main = makeRoundRectView();
+        View main = CubeWithTextureRenderer.makeCubeView(this);
         setContentView(main);
         
         //setContentView(R.layout.activity_main);
