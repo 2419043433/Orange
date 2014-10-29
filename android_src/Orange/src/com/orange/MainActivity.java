@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import com.orange.learn.L_Animation;
 import com.orange.learn.L_RoundRectShapeDrawable;
 import com.orange.ui.view.AnimationItemView;
 import com.orange.ui.widget.Book;
@@ -24,7 +25,7 @@ public class MainActivity extends Activity
     {
         super.onCreate(savedInstanceState);
         // Portal main = new Portal(this);
-         Book main = new Book(this);
+         //Book main = new Book(this);
         // L_Drawable main = new L_Drawable(this);
         // ScrollTabWidgetClient main = new ScrollTabWidgetClient(this);
         // L_Scroller main = new L_Scroller(this);
@@ -53,7 +54,9 @@ public class MainActivity extends Activity
         // View main = L_Permission.makeView(this);
         //View main = L_Banner.makeView(this);
         //View main = new DistrictSelectView(this);
+        L_Animation main = new L_Animation(this);
         setContentView(main);
+        main.make();
 
         // setContentView(R.layout.activity_main);
     }
