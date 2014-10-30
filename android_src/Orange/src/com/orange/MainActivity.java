@@ -13,8 +13,8 @@ import android.widget.TextView;
 
 import com.orange.learn.L_Animation;
 import com.orange.learn.L_RoundRectShapeDrawable;
+import com.orange.ui.animation.SwitchableFrameLayout;
 import com.orange.ui.view.AnimationItemView;
-import com.orange.ui.widget.Book;
 import com.orange.util.LayoutParamsUtil;
 
 public class MainActivity extends Activity
@@ -25,7 +25,7 @@ public class MainActivity extends Activity
     {
         super.onCreate(savedInstanceState);
         // Portal main = new Portal(this);
-         //Book main = new Book(this);
+        // Book main = new Book(this);
         // L_Drawable main = new L_Drawable(this);
         // ScrollTabWidgetClient main = new ScrollTabWidgetClient(this);
         // L_Scroller main = new L_Scroller(this);
@@ -52,11 +52,10 @@ public class MainActivity extends Activity
         // View main = new LayoutTransition_L(this);
         // View main = new Weather(this);
         // View main = L_Permission.makeView(this);
-        //View main = L_Banner.makeView(this);
-        //View main = new DistrictSelectView(this);
-        L_Animation main = new L_Animation(this);
+        // View main = L_Banner.makeView(this);
+        // View main = new DistrictSelectView(this);
+        SwitchableFrameLayout main = new SwitchableFrameLayout(this);
         setContentView(main);
-        main.make();
 
         // setContentView(R.layout.activity_main);
     }
@@ -112,7 +111,7 @@ public class MainActivity extends Activity
     public boolean onCreateOptionsMenu(Menu menu)
     {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
+        // getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
 
